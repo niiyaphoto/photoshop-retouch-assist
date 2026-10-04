@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <title>フォトレタッチ補助</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="panel">
+      <h1>フォトレタッチ補助</h1>
+
+      <p id="status" class="status info">待機中です。使いたい機能の見出しをクリックして開いてください</p>
+
+      <div class="section">
+        <h2 class="section-title" data-section="luminosity">▸ ルミノシティマスク</h2>
+        <div class="section-body collapsed" id="section-luminosity">
+          <sp-button
+            id="analyzeLuminosity"
+            title="開いている画像の輝度分布を調べ、暗部と明部に必要なマスク段階数を提案します"
+          >画像を解析</sp-button>
+
+          <sp-slider
+            id="darkLevels"
+            min="1"
+            max="5"
+            step="1"
+            value="2"
+            title="暗部用マスクを何段階作るかを指定します"
+          >
+            <sp-label slot="label">暗部の段階数</sp-label>
+          </sp-slider>
+
+          <sp-slider
+            id="lightLevels"
+            min="1"
+            max="5"
+            step="1"
+            value="2"
+            title="明部用マスクを何段階作るかを指定します"
+          >
+            <sp-label slot="label">明部の段階数</sp-label>
+          </sp-slider>
+
+          <p id="luminosityReason" class="reason">解析すると判定理由が表示されます。</p>
+
+          <p class="choice-label">出力先</p>
+          <sp-radio-group id="luminosityOutput">
+            <sp-radio value="channels" checked title="チャンネルパネルに 明部/暗部/中間調 のマスクを作ります">チャンネル（推奨）</sp-radio>
+            <sp-radio value="layers" title="マスク付きのニュートラルなカーブ調整レイヤーを作ります">カーブレイヤー</sp-radio>
+          </sp-radio-group>
+
+          <sp-button
+            id="createMasks"
+            title="指定段階数でルミノシティマスクを生成します"
+          >マスクを生成</sp-button>
+
+          <sp-button
+            id="deleteMaskChannels"
+            variant="secondary"
+            title="生成した 明部/暗部/中間調 のチャンネルをまとめて削除します"
+          >マスクチャンネルを削除</sp-button>
+
+          <p class="hint">
+            チャンネル方式: チャンネルパネルに「明部 1〜N」「暗部 1〜N」「中間調」ができます。
+            チャンネルのサムネイルを Ctrl+クリックすると選択範囲として読み込め、
+            その状態で調整レイヤーを作るとマスクとして適用されます。
+            数字が大きいほど範囲が狭く（より明るい/暗い部分だけに）なります。
+          </p>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2 class="section-title" data-section="midtone">▸ 中間調コントラスト</h2>
+        <div class="section-body collapsed" id="section-midtone">
+          <sp-slider
+            id="midtoneNarrow"
+            min="1"
+            max="5"
+            step="1"
+            value="3"
+            title="選択範囲を狭める回数です。多いほど効く範囲が狭く（より中間調だけに）なります"
+          >
+            <sp-label slot="label">範囲の狭め回数</sp-label>
+          </sp-slider>
+
+          <sp-button
+            id="applyMidtone"
+            title="ハイライトと黒を守りながら中間調だけにコントラストを与えるレベル補正セットを作ります"
+          >セットを作成</sp-button>
+
+          <p class="hint">
+            白飛び・黒潰れを守りながら中間調だけにコントラストを与える
+            「レベル補正＋保護マスク付きグループ」を作ります。
+            作成後、レベル補正の左右スライダーを内側に寄せて効き具合を調整してください。
+            強く1回かけるより「弱め×重ねがけ」のほうがトーンが崩れません。
+          </p>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2 class="section-title" data-section="colorcast">▸ カラー補正（色被り）</h2>
+        <div class="section-body collapsed" id="section-colorcast">
+          <sp-slider
+            id="colorCastClip"
+            min="0.01"
+            max="1"
+            step="0.01"
+            value="0.1"
+            title="白色点を測るときに無視する明るい画素の割合です。小さくすると白色点が高め（補正弱め）に、大きくすると低め（補正強め）になります"
+          >
+            <sp-label slot="label">クリップ (%)</sp-label>
+          </sp-slider>
+
+          <sp-slider
+            id="colorCastSoften"
+            min="0"
+            max="100"
+            step="5"
+            value="25"
+            title="測定した白色点を255側へ戻す割合です。25%が指定式の1/4戻しに相当します"
+          >
+            <sp-label slot="label">戻し量 (%)</sp-label>
+          </sp-slider>
+
+          <sp-button
+            id="applyColorCast"
+            title="R/G/Bのヒストグラムを解析し、白色点を揃えるトーンカーブを自動作成します"
+          >自動色被り補正</sp-button>
+
+          <p class="hint">
+            R/G/B各チャンネルのヒストグラムを解析し、階調が最も広いチャンネルを基準に、
+            残りのチャンネルの白色点を「戻し量」の割合で255側へ戻して補正する
+            トーンカーブレイヤーを作ります。ステータスに「測定→適用」の値が出るので、
+            自動補正ダイアログの値とずれる場合はクリップ%を調整してください。
+          </p>
+
+          <sp-button
+            id="createSaturationMask"
+            variant="secondary"
+            title="彩度の高い部分だけに効くマスク付きの色相・彩度レイヤーを作ります"
+          >彩度マスクを作成</sp-button>
+
+          <p class="hint">
+            彩度の高い場所ほど白いマスク付きの「Saturation Mask」レイヤーを作ります。
+            彩度スライダーを下げると、鮮やかすぎる部分だけを自然に抑えられます
+            （色彩リカバリー）。マスクを反転すればシャープ除外マスクとしても使えます。
+          </p>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2 class="section-title" data-section="dodgeburn">▸ ドッジ&バーン</h2>
+        <div class="section-body collapsed" id="section-dodgeburn">
+          <p class="choice-label">方式</p>
+          <sp-radio-group id="dodgeBurnMode">
+            <sp-radio value="curves" checked title="明るくするカーブと暗くするカーブを黒マスク付きで作ります">カーブ方式</sp-radio>
+            <sp-radio value="gray" title="50%グレーのオーバーレイレイヤーを作ります">グレーレイヤー方式</sp-radio>
+            <sp-radio value="colorDodge" title="覆い焼きカラー（光）と焼き込みカラー（影）の2枚を中間調マスク付きで作ります（光と影を描く方式）">光と影を描く</sp-radio>
+          </sp-radio-group>
+
+          <sp-button
+            id="createDodgeBurn"
+            title="選択した方式でドッジ&バーン用レイヤーを作り、すぐ塗れる状態にします"
+          >セットを作成</sp-button>
+
+          <div class="grid two">
+            <sp-button
+              id="dbPaintDodge"
+              variant="secondary"
+              title="「光を描く」レイヤーを選択し、暖色ブラシ・低流量に切り替えます（光と影を描く方式用）"
+            >光を塗る</sp-button>
+            <sp-button
+              id="dbPaintBurn"
+              variant="secondary"
+              title="「影を描く」レイヤーを選択し、黒ブラシ・不透明度50%・低流量に切り替えます（光と影を描く方式用）"
+            >影を塗る</sp-button>
+          </div>
+
+          <p class="hint">
+            使い方（カーブ方式）: 作成後は「ドッジ（明）」が選択済み・白ブラシ10%の状態です。
+            そのまま通常のブラシツール（B）で、明るくしたい部分（被写体・光の当たる面）を
+            画像上でなぞると少しずつ明るくなります。
+            ※ツールバーの覆い焼き/焼き込みツールは使いません。
+            暗くしたい部分は「バーン（暗）」レイヤーを選んで同じように塗ります。
+            塗りすぎたら描画色を黒（Xキーで白黒切替）にして塗り戻せます。
+            レイヤーの事前選択は不要で、効果はグループより下の画像全体に効きます。
+            「光と影を描く」方式は、光（覆い焼きカラー）と影（焼き込みカラー）の
+            2枚を中間調マスク付きで作ります。「光を塗る」で光の当たる面を、
+            「影を塗る」で影の側を、柔らかい大きめブラシ（硬さ0%）で
+            少しずつなぞってください。白飛び・黒潰れするまで塗らないのがコツです。
+            Alt+クリックで画像内の光の色を拾ってから塗るとなじみます。
+            遠景ほど塗る量を減らすと自然な奥行きになります（目安: 前景の2割程度）。
+          </p>
+
+          <p class="choice-label">範囲を絞る（任意）</p>
+          <sp-button
+            id="loadMaskSelection"
+            variant="secondary"
+            title="選択中レイヤーのレイヤーマスクを選択範囲として読み込みます。以降のブラシはその範囲にだけ効きます"
+          >選択中レイヤーのマスクを範囲に読み込む</sp-button>
+          <sp-button
+            id="clearSelectionButton"
+            variant="secondary"
+            title="選択範囲を解除して、画像全体にブラシが効く状態に戻します"
+          >範囲を解除</sp-button>
+          <p class="hint">
+            意図しない場所まで塗ってしまうのを防ぐには、D&Bセット作成後に
+            ルミノシティマスクのレイヤー（例: 明部 2）を選択してから
+            「マスクを範囲に読み込む」を押します。点線の選択範囲が出ている間は
+            その明るさの部分にしかブラシが効きません。終わったら「範囲を解除」します。
+          </p>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2 class="section-title" data-section="highpass">▸ シャープ（ハイパス）</h2>
+        <div class="section-body collapsed" id="section-highpass">
+          <sp-slider
+            id="highPassRadius"
+            min="0.5"
+            max="30"
+            step="0.5"
+            value="3"
+            title="表示レイヤーの統合コピーに適用するハイパス半径を指定します"
+          >
+            <sp-label slot="label">半径 (px)</sp-label>
+          </sp-slider>
+
+          <sp-slider
+            id="highPassOpacity"
+            min="0"
+            max="100"
+            step="1"
+            value="100"
+            title="シャープ効果の強弱です。半径ではなく不透明度で強さを調整します"
+          >
+            <sp-label slot="label">適用量 (%)</sp-label>
+          </sp-slider>
+
+          <p class="choice-label">複製元</p>
+          <sp-radio-group id="highPassSource">
+            <sp-radio value="background" checked title="背景レイヤーを複製して最上位に置きます">背景レイヤー</sp-radio>
+            <sp-radio value="merged" title="表示中の全レイヤーを統合したコピーを使います">表示レイヤーを統合</sp-radio>
+          </sp-radio-group>
+
+          <p class="choice-label">ブレンド</p>
+          <sp-radio-group id="highPassBlend">
+            <sp-radio value="overlay" checked>オーバーレイ</sp-radio>
+            <sp-radio value="softLight">ソフトライト</sp-radio>
+            <sp-radio value="vividLight">ビビッドライト</sp-radio>
+          </sp-radio-group>
+
+          <sp-button
+            id="applyHighPass"
+            title="複製をスマートオブジェクト化し、ハイパスをスマートフィルタとして適用。白マスク付きなので部分制御もできます"
+          >適用</sp-button>
+
+          <p class="hint">
+            半径は3〜4px程度が自然です。上げすぎるとハロー（白い縁取り）が出ます。
+            レタッチ（ゴミ消し等）を行った後は、複製元を「表示レイヤーを統合」に
+            すると消したものが再浮上しません。
+            強弱は「適用量」で調整してください。作成されるレイヤーには白マスクが
+            付いているので、黒ブラシでシャープを効かせたくない場所
+            （空・ボケた背景など）を塗って除外できます。
+          </p>
+
+          <div id="highPassEditBox" class="edit-box hidden">
+            <p id="highPassEditLabel" class="edit-label">調整中: —</p>
+            <p class="hint">
+              半径・適用量・ブレンドを変えると、作成済みのハイパスレイヤーへ
+              そのまま反映されます。仕上がったら「調整を終了」してください。
+            </p>
+            <sp-button id="finishHighPassEdit" variant="secondary">調整を終了</sp-button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2 class="section-title" data-section="orton">▸ オートン効果</h2>
+        <div class="section-body collapsed" id="section-orton">
+          <p class="choice-label">適用範囲</p>
+          <sp-radio-group id="ortonScope">
+            <sp-radio value="all" checked title="表示レイヤーの統合コピーにオートン効果を作ります">画像全体</sp-radio>
+            <sp-radio value="selected" title="選択中のピクセルレイヤーまたはスマートオブジェクトだけにオートン効果を作ります">選択中のレイヤーのみ</sp-radio>
+          </sp-radio-group>
+
+          <sp-slider
+            id="ortonBlur"
+            min="1"
+            max="50"
+            step="1"
+            value="8"
+            title="ガウスぼかしの半径です。既定値は画像長辺の1%を1〜50pxに収めます"
+          >
+            <sp-label slot="label">ぼかし量 (px)</sp-label>
+          </sp-slider>
+
+          <sp-slider
+            id="ortonOpacity"
+            min="0"
+            max="100"
+            step="1"
+            value="50"
+            title="作成するオートンレイヤーの不透明度を指定します"
+          >
+            <sp-label slot="label">適用量 (%)</sp-label>
+          </sp-slider>
+
+          <sp-button
+            id="applyOrton"
+            title="スクリーン+乗算(ぼかし)+明るさカーブの3枚を白マスク付きグループとして作ります"
+          >適用</sp-button>
+
+          <sp-button
+            id="applyOrtonColor"
+            variant="secondary"
+            title="オートンの色味（暗部の沈み+コクのある発色）だけをトーンカーブ1枚で適用します。ぼかし（ソフトフォーカス）は掛かりません。強さは適用量スライダーの値を使います"
+          >色味だけ適用（ぼかしなし）</sp-button>
+
+          <p class="hint">
+            「色味だけ適用」は、オートン効果からぼかしを取り除いた場合と
+            数学的に等価なトーンカーブ（y=2x²−x³+明るさ持ち上げ）を1枚だけ作ります。
+            風景をシャープに保ったまま、オートンの深い発色だけが欲しいときに使います。
+            強さは後からレイヤーの不透明度でも調整できます。
+          </p>
+
+          <div id="ortonEditBox" class="edit-box hidden">
+            <p id="ortonEditLabel" class="edit-label">調整中: —</p>
+            <p class="hint">
+              ぼかし量・適用量を変えると、作成済みのオートン効果へ
+              そのまま反映されます。仕上がったら「調整を終了」してください。
+            </p>
+            <sp-button id="finishOrtonEdit" variant="secondary">調整を終了</sp-button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2 class="section-title" data-section="colorgrade">▸ 色を乗せる（ベタ塗り）</h2>
+        <div class="section-body collapsed" id="section-colorgrade">
+          <p class="choice-label">ソフトライトのベタ塗りを作成</p>
+          <div class="grid two">
+            <sp-button
+              id="cgCool"
+              variant="secondary"
+              title="影や空を青灰色にまとめるベタ塗り（ソフトライト）を作ります。選択範囲があればその範囲だけに効きます"
+            >青灰色（影・空）</sp-button>
+            <sp-button
+              id="cgWarm"
+              variant="secondary"
+              title="光の当たる面をオレンジに寄せるベタ塗り（ソフトライト）を作ります。選択範囲があればその範囲だけに効きます"
+            >オレンジ（光）</sp-button>
+          </div>
+          <p class="hint">
+            写真の色を「影=青系・光=暖色系」の2系統に整理する仕上げです。
+            先に範囲を選択してから押すと（おすすめ:
+            選択範囲メニューの「色域指定」で空や山肌をスポイト）、
+            その範囲だけに色が乗ります。選択なしで押すと画像全体に乗り、
+            マスクを黒ブラシで塗って範囲を作れます。
+            色を変えたいときは、できたレイヤーのサムネイルをダブルクリックすると
+            カラーピッカーで自由に選び直せます。効きが強いときはレイヤーの
+            不透明度を下げてください。
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+    <script src="js/main.js"></script>
+  </body>
+</html>

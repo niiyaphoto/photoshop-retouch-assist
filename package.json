@@ -1,0 +1,11 @@
+{
+  "name": "photoshop-photo-retouch-assist",
+  "version": "0.1.0",
+  "private": false,
+  "description": "Photoshop UXP フォトレタッチ補助パネル（OSS公開版）",
+  "license": "GPL-3.0-or-later",
+  "scripts": {
+    "test": "node --test \"tests/*.test.js\"",
+    "build:ccx": "node tools/build-ccx.js plugin"
+  }
+}

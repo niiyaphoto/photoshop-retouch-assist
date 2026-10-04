@@ -1,0 +1,37 @@
+{
+  "manifestVersion": 5,
+  "apiVersion": 2,
+  "id": "com.niiya.photo-retouch-assist",
+  "name": "フォトレタッチ補助",
+  "version": "0.1.0",
+  "main": "index.html",
+  "host": {
+    "app": "PS",
+    "minVersion": "24.6.0"
+  },
+  "entrypoints": [
+    {
+      "type": "panel",
+      "id": "retouchAssistPanel",
+      "label": {
+        "default": "フォトレタッチ補助"
+      },
+      "minimumSize": {
+        "width": 230,
+        "height": 360
+      },
+      "maximumSize": {
+        "width": 2400,
+        "height": 2400
+      },
+      "preferredDockedSize": {
+        "width": 320,
+        "height": 700
+      },
+      "preferredFloatingSize": {
+        "width": 360,
+        "height": 760
+      }
+    }
+  ]
+}
